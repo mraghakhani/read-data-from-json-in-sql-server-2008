@@ -24,60 +24,63 @@ declare @Statusindex int =0
 declare @amountindex int=0
 declare @codeindex int =0
   
-
+  set @firstGencode=CHARINDEX('"genCode":"', @jsons) + LEN('"genCode":"')
 		
-while(1>0)
-begin 
-	if(CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')<@firstGencode)
-	begin 
-	break
-	end
-	set @Shenase= (select  SUBSTRING(
-        @jsons
-        ,CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')
-        ,CHARINDEX('"', @jsons, CHARINDEX('"genCode":"',@jsons) + LEN('"genCode":"'))
-		- CHARINDEX('"genCode":"', @jsons) - LEN('"genCode":"')
-    ))
-		set @RowNum= (select cast((select SUBSTRING(
-        @jsons
-        ,CHARINDEX('"rowNum":', @jsons,@RowNumindex) + LEN('"rowNum":')
-        ,CHARINDEX(',', @jsons, CHARINDEX('"rowNum":',@jsons) + LEN('"rowNum":'))
-		- CHARINDEX('"rowNum":', @jsons) - LEN('"rowNum":') 
-    ))as int))
+--while(1>0)
+--begin 
+-------the break statement---------------
+--	if(CHARINDEX('"genCode":"', @jsons,@gencodeindex)+ LEN('"genCode":"')<@firstGencode )
+--	begin 
+--	break
+--	end
+--	set @Shenase= (select  SUBSTRING(
+--        @jsons
+--        ,CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')
+--        ,CHARINDEX('"', @jsons, CHARINDEX('"genCode":"',@jsons) + LEN('"genCode":"'))
+--		- CHARINDEX('"genCode":"', @jsons) - LEN('"genCode":"')
+--    ))
+--		set @RowNum= (select cast((select SUBSTRING(
+--        @jsons
+--        ,CHARINDEX('"rowNum":', @jsons,@RowNumindex) + LEN('"rowNum":')
+--        ,CHARINDEX(',', @jsons, CHARINDEX('"rowNum":',@jsons,@RowNumindex) + LEN('"rowNum":'))
+--		- CHARINDEX('"rowNum":', @jsons,@RowNumindex) - LEN('"rowNum":') 
+--    ))as int))
 
-	set @gencodeindex=CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')--13--420--11
-		print @Shenase
-	print @gencodeindex
-	declare @i int=0
-  	while(@RowNum>@i)
-	begin
-	--if(CHARINDEX('"amount":', @jsons,0) + LEN('"amount":')<@gencodeindex)
-	--begin 
-	--break
-	--end
-	insert into @RowValueandCode (RowValue,RowCode) values(
-	(select  SUBSTRING(
-        @jsons
-        ,CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
-        ,CHARINDEX(',', @jsons, CHARINDEX('"amount":',@jsons) + LEN('"amount":')) 
-		-CHARINDEX('"amount":', @jsons) - LEN('"amount":')
-    ))
-	,
-	(select  SUBSTRING(
-        @jsons
-        ,CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
-        ,CHARINDEX('"', @jsons, CHARINDEX('"code":"',@jsons) + LEN('"code":"'))
-		- CHARINDEX('"code":"', @jsons) - LEN('"code":"')
-    )))
-	set @amountindex=CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
-	set @codeindex=CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
-	set @i=@i+1
-	end
-	select * from  @RowValueandCode
+--	set @gencodeindex=CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')--13--420--11
+--		print @Shenase
+--	print @gencodeindex
+--	declare @i int=0
+--  	while(@RowNum>@i)
+--	begin
+--	--if(CHARINDEX('"amount":', @jsons,0) + LEN('"amount":')<@gencodeindex)
+--	--begin 
+--	--break
+--	--end
+--	insert into @RowValueandCode (RowValue,RowCode) values(
+--	(select  SUBSTRING(
+--        @jsons
+--        ,CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
+--        ,CHARINDEX(',', @jsons, CHARINDEX('"amount":',@jsons,@amountindex)) 
+--		-CHARINDEX('"amount":', @jsons,@amountindex) - LEN('"amount":')
+--    ))
+--	,
+--	(select  SUBSTRING(
+--        @jsons
+--        ,CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
+--        ,CHARINDEX('"', @jsons, CHARINDEX('"code":"',@jsons,@codeindex) + LEN('"code":"'))
+--		- CHARINDEX('"code":"', @jsons,@codeindex) - LEN('"code":"')
+--    )))
+--	set @amountindex=CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
+--	set @codeindex=CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
+--	set @i=@i+1
+--	end
+--	select * from  @RowValueandCode
 
-	delete 
-	from @RowValueandCode
-end
+--	delete 
+--	from @RowValueandCode
+--	set @RowNumindex=CHARINDEX('"rowNum":', @jsons,@RowNumindex) + LEN('"rowNum":')
+
+--end
 
 
 
@@ -143,29 +146,35 @@ begin
 
 	set @gencodeindex=CHARINDEX('"genCode":"', @jsons) + LEN('"genCode":"')
 
-	while(@gencodeindex>@amountindex)
+	declare @i int =0
+	while(@RowNum>@i)
 	begin
-
+	--if(CHARINDEX('"amount":', @jsons,0) + LEN('"amount":')<@gencodeindex)
+	--begin 
+	--break
+	--end
 	insert into @RowValueandCode (RowValue,RowCode) values(
 	(select  SUBSTRING(
         @jsons
         ,CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
-        ,CHARINDEX(',', @jsons, CHARINDEX('"amount":',@jsons) + LEN('"amount":')) 
-		- CHARINDEX('"amount":', @jsons) - LEN('"amount":')
+        ,CHARINDEX(',', @jsons, CHARINDEX('"amount":',@jsons,@amountindex)) 
+		-CHARINDEX('"amount":', @jsons,@amountindex) - LEN('"amount":')
     ))
 	,
 	(select  SUBSTRING(
         @jsons
         ,CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
-        ,CHARINDEX('"', @jsons, CHARINDEX('"code":"',@jsons) + LEN('"code":"'))
-		- CHARINDEX('"code":"', @jsons) - LEN('"code":"')
+        ,CHARINDEX('"', @jsons, CHARINDEX('"code":"',@jsons,@codeindex) + LEN('"code":"'))
+		- CHARINDEX('"code":"', @jsons,@codeindex) - LEN('"code":"')
     )))
 	set @amountindex=CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
 	set @codeindex=CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
-
+	set @i=@i+1
 	end
-	select * from @RowValueandCode
+	select * from  @RowValueandCode
 
+	
+	
 	set @gencodeindex=CHARINDEX('"payTime":"', @jsons,@datetimeindex) + LEN('"payTime":"')
 	set @RowNumindex=CHARINDEX('"rowNum":', @jsons,@RowNumindex) + LEN('"rowNum":')
 	set @warrantytypeindex=CHARINDEX('"warrantyType":"', @jsons,@warrantytypeindex) + LEN('"warrantyType":"')
@@ -175,8 +184,23 @@ begin
 	set @Statusindex=CHARINDEX('"status":"', @jsons,@Statusindex) + LEN('"status":"')
 	insert into ACCJornalFromService 
 	(Shenase,Date,Time,RowNum,warrantytype,TrxType,BankKeyTransaction,Status
+	,RowCode1,RowValue1,RowCode2,RowValue2--,RowCode3,RowValue3,RowCode4,RowValue4,RowCode5,RowValue5
+	--,RowCode6,RowValue6,RowCode7,RowValue7,RowCode8,RowValue8,RowCode9,RowValue9,RowCode10,RowValue10,
+	--RowCode11,RowValue11,RowCode12,RowValue12,RowCode13,RowValue13,RowCode14,RowValue14,RowCode15,RowValue15,
+	--RowCode16,RowValue16,RowCode17,RowValue17,RowCode18,RowValue18,RowCode19,RowValue19,RowCode20,RowValue20,
+	--RowCode21,RowValue21,RowCode22,RowValue22,RowCode23,RowValue23,RowCode24,RowValue24,RowCode25,RowValue25,
+	--RowCode26,RowValue26,RowCode27,RowValue27,RowCode28,RowValue28,RowCode29,RowValue29,RowCode30,RowValue30,
+	--RowCode31,RowValue31,RowCode32,RowValue32,RowCode33,RowValue33,RowCode34,RowValue34,RowCode35,RowValue35,
+	--RowCode36,RowValue36,RowCode37,RowValue37,RowCode38,RowValue38,RowCode39,RowValue39,RowCode40,RowValue40,
+	--RowCode41,RowValue41,RowCode42,RowValue42,RowCode43,RowValue43,RowCode44,RowValue44,RowCode45,RowValue45,
+	--RowCode46,RowValue46,RowCode47,RowValue47,RowCode48,RowValue48,RowCode49,RowValue49,RowCode50,RowValue50,
 	)values
 	(
-	@Shenase,@Date,@Time,@RowNum,@warrantytype,@TrxType,@BankKeyTransaction,@Status
+	@Shenase,@Date,@Time,@RowNum,@warrantytype,@TrxType,@BankKeyTransaction,@Status,(select RowCode from @RowValueandCode),
+	(select RowValue from @RowValueandCode),(select RowCode from @RowValueandCode),(select RowValue from @RowValueandCode)
 	)
+	delete 
+	from @RowValueandCode
+	
 end
+--Row_number(order by )
