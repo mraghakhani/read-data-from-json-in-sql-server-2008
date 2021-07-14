@@ -25,34 +25,38 @@ declare @BankKeyTransactionindex int =0
 declare @Statusindex int =0
 declare @amountindex int=0
 declare @codeindex int =0
-  --------------------------------------------
+  -------------------cursor variables-------------------
 
-  declare @code int
+declare @code int
 declare @amount nvarchar (20)
 
- DECLARE @codecol VarChar(20)--='RowCode'
- DECLARE @amountcol VarChar(20)--='RowValue'
+DECLARE @codecol VarChar(20)
+DECLARE @amountcol VarChar(20)
 
- DECLARE @sql Varchar(1000)
+DECLARE @sql Varchar(1000)
+----------------------------
+-------------------------------------
 
-
-  set @firstGencode=CHARINDEX('"genCode":"', @jsons) + LEN('"genCode":"')
+ set @firstGencode=CHARINDEX('"genCode":"', @jsons) + LEN('"genCode":"')
 		
 
 
 
 while(1>0)
 begin
+-----------end condition ------------------------------------
 	if(CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')<@firstGencode)
 	begin 
 	break
 	end
+
 	set @Shenase= (select  SUBSTRING(
         @jsons
         ,CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')
         ,CHARINDEX('"', @jsons, CHARINDEX('"genCode":"',@jsons,@gencodeindex) + LEN('"genCode":"'))
 		- CHARINDEX('"genCode":"', @jsons,@gencodeindex) - LEN('"genCode":"')
     ))
+
 
 	set @Date=(select LEFT( SUBSTRING(
         @jsons
@@ -62,6 +66,7 @@ begin
     ),10))
 
 
+
 	set @Time=(select RIGHT( SUBSTRING(
         @jsons
         ,CHARINDEX('"payTime":"', @jsons,@datetimeindex) + LEN('"payTime":"')
@@ -69,18 +74,21 @@ begin
 		- CHARINDEX('"payTime":"', @jsons) - LEN('"payTime":"')
     ),8))
 
+
 	set @RowNum= (select cast((select SUBSTRING(
         @jsons
         ,CHARINDEX('"rowNum":', @jsons,@RowNumindex) + LEN('"rowNum":')
         ,CHARINDEX(',', @jsons, CHARINDEX('"rowNum":',@jsons) + LEN('"rowNum":'))
 		- CHARINDEX('"rowNum":', @jsons) - LEN('"rowNum":') 
     ))as int))
+
 	set @warrantytype=(select (select  SUBSTRING(
         @jsons
         ,CHARINDEX('"warrantyType":"', @jsons,@warrantytypeindex) + LEN('"warrantyType":"')
         ,CHARINDEX('"', @jsons, CHARINDEX('"warrantyType":"',@jsons) + LEN('"warrantyType":"')) 
 		- CHARINDEX('"warrantyType":"', @jsons) - LEN('"warrantyType":"')
     )))
+
 	set @TrxType=(select  SUBSTRING(
         @jsons
         ,CHARINDEX('"trxType":', @jsons,@TrxTypeindex) + LEN('"trxType":')
@@ -103,16 +111,13 @@ begin
     ))
 
 	set @gencodeindex=CHARINDEX('"genCode":"', @jsons,@gencodeindex) + LEN('"genCode":"')
-	if   EXISTS(select 1 from accdt where BankKeyTransaction=@BankKeyTransaction)
+
+	if   EXISTS(select 1 from ACCJornalFromService where BankKeyTransaction=@BankKeyTransaction)
 	continue
-	print @shenase
+
 	declare @i int =0
 	while(@RowNum>@i)
 	begin
-	--if(CHARINDEX('"amount":', @jsons,0) + LEN('"amount":')<@gencodeindex)
-	--begin 
-	--break
-	--end
 	insert into @RowValueandCode (RowValue,RowCode) values(
 	(select  SUBSTRING(
         @jsons
@@ -130,8 +135,10 @@ begin
 	set @amountindex=CHARINDEX('"amount":', @jsons,@amountindex) + LEN('"amount":')
 	set @codeindex=CHARINDEX('"code":"', @jsons,@codeindex) + LEN('"code":"')
 	set @i=@i+1
+
 	end
-	select * from  @RowValueandCode
+
+	--select * from  @RowValueandCode
 
 	
 	
@@ -142,33 +149,33 @@ begin
 	set @BankKeyTransactionindex=CHARINDEX('"bankKeyTransaction":"', @jsons,@BankKeyTransactionindex)
 	+ LEN('"bankKeyTransaction":"')
 	set @Statusindex=CHARINDEX('"status":"', @jsons,@Statusindex) + LEN('"status":"')
-	insert into accdt 
+
+	insert into ACCJornalFromService 
 	(Shenase,Date,Time,RowNum,warrantytype,TrxType,BankKeyTransaction,Status)values
 	(@Shenase,@Date,@Time,@RowNum,@warrantytype,@TrxType,@BankKeyTransaction,@Status)
-	declare Cursor_users Cursor For
-select rowvalue,rowcode from @RowValueandCode
-open Cursor_users
-Fetch next from Cursor_users into @amount ,@code
-declare @j int =1
-while @@FETCH_STATUS=0
-begin
-set @codecol='code'+CAST(@j as varchar(3))
-set @amountcol='value'+CAST(@j as varchar(3))
 
- SET @sql = 'update accdt set ' + @codecol+' ='+cast(@code as varchar(15)) + ' , ' 
- + @amountcol +' = '''+ @amount+''''+ ' where BankKeyTransaction '+' = '''+@BankKeyTransaction+''''
- EXEC(@sql)
-Fetch next from Cursor_users into @amount ,@code
-set @j=@j+1
+	declare Cursor_users Cursor For
+	select rowvalue,rowcode from @RowValueandCode
+	open Cursor_users
+	Fetch next from Cursor_users into @amount ,@code
+	declare @j int =1
+	while @@FETCH_STATUS=0
+begin
+	set @codecol='RowCode'+CAST(@j as varchar(3))
+	set @amountcol='RowValue'+CAST(@j as varchar(3))
+
+	 SET @sql = 'update ACCJornalFromService set ' + @codecol+' ='+cast(@code as varchar(15)) + ' , ' 
+	 + @amountcol +' = '''+ @amount+''''+ ' where BankKeyTransaction '+' = '''+@BankKeyTransaction+''''
+	EXEC(@sql)
+	Fetch next from Cursor_users into @amount ,@code
+	set @j=@j+1
 end
-close Cursor_users
-deallocate Cursor_users
+	close Cursor_users
+	deallocate Cursor_users
 	delete 
 	from @RowValueandCode
 	
 end
---Row_number(order by )
-
 
 
 
